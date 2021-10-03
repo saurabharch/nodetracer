@@ -1,0 +1,24 @@
+{
+  "name": "hm-oct",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "parse": "node parser/index.js",
+    "test": "node parser/tests/index.js"
+  },
+  "keywords": [
+    "n8n"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "mermaid-js-converter": "^1.0.13",
+    "mermaid-svg": "0.0.1",
+    "mermaid.cli": "^0.5.1",
+    "n8n-nodes-base": "^0.138.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.4.1"
+  }
+}

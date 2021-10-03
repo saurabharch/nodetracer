@@ -1,0 +1,15 @@
+{
+  "editor.formatOnSave": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "package-lock.json": true,
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "_trash": true,
+  }
+}
