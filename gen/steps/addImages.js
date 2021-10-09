@@ -10,8 +10,6 @@ const NODES_BASE_DIR_PATH = path.resolve(
 // example simplified-to-nmPath entry
 // { trello: node_modules/n8n-nodes-base/dist/nodes/Trello/trello.svg }
 
-const pathMap = makePathMap();
-
 async function addImages(transposed) {
   const serverPaths = {};
 
@@ -22,18 +20,14 @@ async function addImages(transposed) {
       await getImgPathFromType(i.target.type);
 
     if (sourceServerPaths) {
-      for (const [simplifiedPath, nodeModulesPath] of Object.entries(
-        sourceServerPaths
-      )) {
-        serverPaths[simplifiedPath] = nodeModulesPath;
+      for (const [simplePath, nmPath] of Object.entries(sourceServerPaths)) {
+        serverPaths[simplePath] = nmPath;
       }
     }
 
     if (targetServerPaths) {
-      for (const [simplifiedPath, nodeModulesPath] of Object.entries(
-        targetServerPaths
-      )) {
-        serverPaths[simplifiedPath] = nodeModulesPath;
+      for (const [simplePath, nmPath] of Object.entries(targetServerPaths)) {
+        serverPaths[simplePath] = nmPath;
       }
     }
 
@@ -57,6 +51,8 @@ async function addImages(transposed) {
   };
 }
 
+const pathMap = makePathMap();
+
 const isFreeFloatingNode = (nodePathParts) => nodePathParts.length === 3;
 
 const imgElement = (filePath) => `<img src='${filePath}' />`;
@@ -64,11 +60,16 @@ const imgElement = (filePath) => `<img src='${filePath}' />`;
 async function getImgPathFromType(nodeType) {
   if (!nodeType) return null;
 
-  const pathMapKey = nodeType
+  let pathMapKey = nodeType
     .split(".")
     .pop()
     .toLowerCase()
     .replace("trigger", "");
+
+  // edge case: folder name `Sheet` and node name `Sheets`
+  if (pathMapKey === "googlesheets") {
+    pathMapKey = pathMapKey.replace(/s$/, "");
+  }
 
   if (!pathMap[pathMapKey]) {
     throw new Error(`Mapping failed for key:\n${pathMapKey}`);
