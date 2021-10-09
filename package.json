@@ -1,12 +1,11 @@
 {
-  "name": "hm-oct",
+  "name": "whoa",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "parse": "node parser/index.js",
-    "test": "node parser/tests/index.js"
+    "test": "node gen/tests/index.js"
   },
   "engines": {
     "node": "14.x"
