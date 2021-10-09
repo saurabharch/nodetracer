@@ -33,11 +33,26 @@ let staticServerPaths = {};
 
 app.post("/api/generate", async (req, res) => {
   const { workflow, options } = req.body;
-  const { def, serverPaths } = await generate(JSON.parse(workflow), options);
 
-  staticServerPaths = serverPaths;
+  if (!workflow) {
+    res.status(400).json({ message: "Workflow missing" });
+  }
 
-  res.json({ def });
+  let json;
+
+  try {
+    json = JSON.parse(workflow);
+  } catch (error) {
+    return res.status(400).json({ message: "Invalid JSON" }).end();
+  }
+
+  try {
+    const { def, serverPaths } = await generate(json, options);
+    staticServerPaths = serverPaths;
+    res.json({ def });
+  } catch (error) {
+    res.status(400).json({ message: "Failed to generate SVG for workflow" });
+  }
 });
 
 app.get("/result", (req, res) => {

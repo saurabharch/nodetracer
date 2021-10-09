@@ -53,6 +53,13 @@
 
       const json = await res.json();
 
+      if (res.status === 400) {
+        const validationMessageDiv = document.createElement("div");
+        validationMessageDiv.innerHTML = json.message;
+        document.body.appendChild(validationMessageDiv);
+        return;
+      }
+
       localStorage.setItem('def', json.def);
       window.location.assign('/result');
     });
