@@ -7,25 +7,54 @@ const NODES_BASE_DIR_PATH = path.resolve(
   "n8n-nodes-base"
 );
 
+// example simplified-to-nmPath entry
+// { trello: node_modules/n8n-nodes-base/dist/nodes/Trello/trello.svg }
+
 const pathMap = makePathMap();
 
 async function addImages(transposed) {
+  const serverPaths = {};
+
   const promises = transposed.map(async (i) => {
+    const { img: sourceImg, mapping: sourceServerPaths } =
+      await getImgPathFromType(i.source.type);
+    const { img: targetImg, mapping: targetServerPaths } =
+      await getImgPathFromType(i.target.type);
+
+    if (sourceServerPaths) {
+      for (const [simplifiedPath, nodeModulesPath] of Object.entries(
+        sourceServerPaths
+      )) {
+        serverPaths[simplifiedPath] = nodeModulesPath;
+      }
+    }
+
+    if (targetServerPaths) {
+      for (const [simplifiedPath, nodeModulesPath] of Object.entries(
+        targetServerPaths
+      )) {
+        serverPaths[simplifiedPath] = nodeModulesPath;
+      }
+    }
+
     return {
       source: {
         name: i.source.name,
-        img: await getImgPathFromType(i.source.type),
+        img: sourceImg,
         type: i.source.type,
       },
       target: {
         name: i.target.name,
-        img: await getImgPathFromType(i.target.type),
+        img: targetImg,
         type: i.target.type,
       },
     };
   });
 
-  return await Promise.all(promises);
+  return {
+    imagified: await Promise.all(promises),
+    serverPaths,
+  };
 }
 
 const isFreeFloatingNode = (nodePathParts) => nodePathParts.length === 3;
@@ -54,17 +83,23 @@ async function getImgPathFromType(nodeType) {
     const { icon } = nodeInstance.description;
 
     if (icon.startsWith("file:")) {
-      const filePath = path.resolve(
+      const fullPath = path.resolve(
         nodePath.split("/").slice(0, -1).join("/"),
         icon.split("file:").pop()
       );
-      return imgElement(filePath);
+      const simplified = fullPath.split("/").pop();
+      const nmPath = getNodesModulesPath(fullPath);
+
+      return {
+        img: imgElement(simplified),
+        mapping: { [simplified]: nmPath },
+      };
     } else if (icon.startsWith("fa:")) {
       // TODO: Delete me
-      const { color } = nodeInstance.description.defaults;
-      console.log(icon, color);
+      // const { color } = nodeInstance.description.defaults;
+      // console.log(icon, color);
       // ------------
-      return icon.replace("fa:", "fa:fa-");
+      return { img: icon.replace("fa:", "fa:fa-") };
     }
   }
 
@@ -89,10 +124,19 @@ async function getImgPathFromType(nodeType) {
     }
   }
 
-  const filePath = path.resolve(nodePath, imgFile);
+  const fullPath = path.resolve(nodePath, imgFile);
+  const simplified = fullPath.split("/").pop();
+  const nmPath = getNodesModulesPath(fullPath);
 
-  return imgElement(filePath);
+  return {
+    img: imgElement(`/${simplified}`),
+    mapping: { [simplified]: nmPath },
+  };
 }
+
+const getNodesModulesPath = (fullPath) => {
+  return fullPath.substring(fullPath.indexOf("node_modules"));
+};
 
 function getFontAwesomeIcon(nodeType, nodePath) {
   const nodeName = nodeType.split(".").pop();
@@ -106,11 +150,11 @@ function getFontAwesomeIcon(nodeType, nodePath) {
   const faIcon = nodeInstance.description.icon.replace("fa:", "fa:fa-");
 
   // TODO: Delete this -------------------------
-  const { color } = nodeInstance.description.defaults;
-  console.log(faIcon, color);
+  // const { color } = nodeInstance.description.defaults;
+  // console.log(faIcon, color);
   // ------------------------------------------
 
-  return faIcon;
+  return { img: faIcon };
 }
 
 /**

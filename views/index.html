@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form</title>
+</head>
+
+<body>
+
+  <form method="POST" id="workflow-form">
+    <label for="workflow">Workflow</label>
+    <input type="text" name="workflow" id="workflow" />
+
+    <label for="options-direction">Direction:</label>
+    <select id="options-direction" name="options-direction">
+      <option value="LR">Left to right</option>
+      <option value="TB">Top to bottom</option>
+    </select>
+
+    <label for="options-removeStartNode">Remove start node:</label>
+    <select id="options-removeStartNode" name="options-removeStartNode">
+      <option value="yes">Yes</option>
+      <option value="no">No</option>
+    </select>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    localStorage.removeItem('def');
+
+    const form = document.getElementById('workflow-form');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const payload = {
+        workflow: document.getElementById('workflow').value,
+        options: {
+          removeStartNode: document.getElementById('options-removeStartNode').value === 'yes',
+          flowchart: { direction: document.getElementById('options-direction').value }
+        }
+      }
+
+      const res = await fetch('/api/generate', {
+        headers: { "Content-Type": "application/json" },
+        method: event.target.method,
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+
+      localStorage.setItem('def', json.def);
+      window.location.assign('/result');
+    });
+  </script>
+
+</body>
+
+</html>

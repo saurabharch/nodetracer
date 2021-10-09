@@ -1,10 +1,8 @@
-const { parserConfig } = require("./parserConfig");
+function makeDef(imagified, { type }, config) {
+  const {
+    flowchart: { arrowType, direction },
+  } = config;
 
-const {
-  flowchart: { arrowType, direction },
-} = parserConfig;
-
-function makeDef(imagified, { type }) {
   return imagified
     .reduce(
       (acc, { source, target }) => {
@@ -57,8 +55,7 @@ function targetClassIsCovered(acc, targetName) {
 
 function makeDocsClickLine(type, name) {
   const link = `https://docs.n8n.io/nodes/${type}`;
-  const docsClickLine = `click ${name} "${link}" _blank`;
-  return docsClickLine.replace(/"/g, '\\"');
+  return `click ${name} "${link}" _blank`;
 }
 
 function getSeparator(type) {

@@ -1,6 +1,10 @@
-const parserConfig = {
+const defaultConfig = {
   securityLevel: "loose",
-  removeStartNode: false,
+
+  /**
+   * One of `hidden`, 'showing'
+   */
+  removeStartNode: true,
 
   flowchart: {
     /**
@@ -13,9 +17,7 @@ const parserConfig = {
      * Add dashes for longer arrows: ---->
      */
     arrowType: "-->",
-
-    // arrow length is _not_ available in Mermaid.js v8.0.0
   },
 };
 
-module.exports = { parserConfig };
+module.exports = { defaultConfig };
