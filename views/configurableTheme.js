@@ -46,6 +46,10 @@ const faIcons = `
     color: #FF9922;
   }
 
+  .fa-clock {
+    color: #408000;
+  }
+
   .fa-arrow-right {
     color: #b0b0b0;
   }
