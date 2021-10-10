@@ -54,12 +54,12 @@ app.get("/api/defs/:id", async (req, res) => {
 });
 
 const getDefById = async (id) => {
-  const sql = "SELECT def FROM defs WHERE id = $1";
-  return await pool.query(sql, [id]).then((dbResult) => dbResult.rows[0]);
+  const sql = "SELECT def FROM defs WHERE id = $1;";
+  return await pool.query(sql, [id]).then((ret) => ret.rows[0]);
 };
 
 const storeDefAndPaths = async (def, paths) => {
-  const sql = "INSERT INTO defs (def, paths) VALUES ($1, $2) RETURNING id";
+  const sql = "INSERT INTO defs (def, paths) VALUES ($1, $2) RETURNING id;";
   return await pool.query(sql, [def, paths]).then((ret) => ret.rows[0]);
 };
 
@@ -71,21 +71,20 @@ app.get("/", (_, res) => {
   res.sendFile(path.join(viewsPath, "index.html"));
 });
 
-app.get("/result", (req, res) => {
-  for (const [simplified, nmPath] of Object.entries(staticServerPaths)) {
-    app.use(`/${simplified}`, express.static(path.join(__dirname, nmPath)));
-  }
-
-  res.sendFile(path.join(viewsPath, "result.html"));
-});
-
 app.get("/results/:id", async (req, res) => {
   const sql = "SELECT paths FROM defs WHERE id = $1";
-  const { paths } = await pool
+
+  const result = await pool
     .query(sql, [req.params.id])
     .then((ret) => ret.rows[0]);
 
-  for (const [simplified, nmPath] of Object.entries(paths)) {
+  if (!result) {
+    return res
+      .status(400)
+      .json({ message: `No workflow with ID ${req.params.id} found` });
+  }
+
+  for (const [simplified, nmPath] of Object.entries(result.paths)) {
     app.use(`/${simplified}`, express.static(path.join(__dirname, nmPath)));
   }
 
