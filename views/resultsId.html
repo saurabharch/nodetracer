@@ -24,30 +24,25 @@
 
   <script src="https://unpkg.com/mermaid@8.8.0/dist/mermaid.min.js"></script>
   <script src="/configurableTheme.js"></script>
+  <script src="/renderConfig.js"></script>
 
   <script>
-    const renderConfig = {
-      theme: "default",
-      themeCSS,
-      securityLevel: "loose",
-      flowchart: {
-        htmlLabels: true,
-        curve: "basis",
-      },
-    };
+    const id = window.location.href.split('/').pop();
 
-    mermaid.mermaidAPI.initialize(renderConfig);
+    fetch(`/api/defs/${id}`, {
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      method: 'get',
+    }).then(async res => {
+      const json = await res.json();
 
-    // const exampleCallback = function () {
-    //   alert("Example callback was triggered!!");
-    // };
+      mermaid.mermaidAPI.initialize(renderConfig);
 
-    const embedSvg = function (svgCode, bindFunctions) {
-      document.getElementById("canvas").innerHTML = svgCode;
-    };
+      const embedSvg = function (svgCode, bindFunctions) {
+        document.getElementById("canvas").innerHTML = svgCode;
+      };
 
-    // storedDef
-    mermaid.mermaidAPI.render("mermaid", storedDef, embedSvg);
+      mermaid.mermaidAPI.render("mermaid", json.def, embedSvg);
+    });
   </script>
 
 </body>

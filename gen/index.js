@@ -18,13 +18,13 @@ async function generate(json, options) {
     : connections;
 
   const transposed = transpose(connections, nodes);
-  const { imagified, serverPaths } = await addImages(transposed);
+  const { imagified, paths } = await addImages(transposed);
   const marked = markIfBranches(imagified);
   const highlighted = setHighlight(marked);
 
   return {
     def: makeDef(highlighted, { type: "compact" }, config),
-    serverPaths,
+    paths,
   };
 }
 

@@ -1,11 +1,14 @@
 const path = require("path");
-const favicon = require("serve-favicon");
 const express = require("express");
-const port = process.env.PORT || 5000;
-const app = express();
+const compression = require("compression");
+const favicon = require("serve-favicon");
+
 const { generate } = require("./gen");
 const { pool } = require("./dbConfig");
-const { writeStoredDef } = require("./gen/utils");
+
+const viewsPath = path.join(__dirname, "views");
+
+const app = express();
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -17,53 +20,55 @@ app.use((req, res, next) => {
   next();
 });
 
-const viewsPath = path.join(__dirname, "views");
-
-app.use(express.urlencoded({ extended: true })); // body parser
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
 app.use(express.static(viewsPath));
-
 app.use(favicon(path.join(viewsPath, "favicon.ico")));
+app.use(compression());
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(viewsPath, "index.html"));
-});
-
-let staticServerPaths = {};
+// ----------------------------------
+//               API
+// ----------------------------------
 
 app.post("/api/generate", async (req, res) => {
-  const { workflow, options } = req.body;
-
-  if (!workflow) {
-    res.status(400).json({ message: "Workflow missing" });
-  }
-
-  let json;
-
   try {
-    json = JSON.parse(workflow);
-  } catch (error) {
-    return res.status(400).json({ message: "Invalid JSON" }).end();
-  }
-
-  try {
-    const { def, serverPaths } = await generate(json, options);
-    staticServerPaths = serverPaths;
-
-    const dbResult = await pool.query(
-      "INSERT INTO defs (def, paths) VALUES ($1, $2) RETURNING id",
-      [def, serverPaths]
-    );
-
-    const { id } = dbResult.rows[0];
-
+    const { workflow, options } = req.body;
+    const json = JSON.parse(workflow);
+    const { def, paths } = await generate(json, options);
+    const { id } = await storeDefAndPaths(def, paths);
     res.json({ def, id });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Failed to generate and store SVG for workflow" });
+    console.log(error);
+    res.status(400).json({ message: "Something went wrong!!" });
   }
+});
+
+app.get("/api/defs/:id", async (req, res) => {
+  try {
+    const { def } = await getDefById(req.params.id);
+    res.json({ def });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: "Something went wrong!!" });
+  }
+});
+
+const getDefById = async (id) => {
+  const sql = "SELECT def FROM defs WHERE id = $1";
+  return await pool.query(sql, [id]).then((dbResult) => dbResult.rows[0]);
+};
+
+const storeDefAndPaths = async (def, paths) => {
+  const sql = "INSERT INTO defs (def, paths) VALUES ($1, $2) RETURNING id";
+  return await pool.query(sql, [def, paths]).then((ret) => ret.rows[0]);
+};
+
+// ----------------------------------
+//               FE
+// ----------------------------------
+
+app.get("/", (_, res) => {
+  res.sendFile(path.join(viewsPath, "index.html"));
 });
 
 app.get("/result", (req, res) => {
@@ -75,33 +80,18 @@ app.get("/result", (req, res) => {
 });
 
 app.get("/results/:id", async (req, res) => {
-  const { id } = req.params;
+  const sql = "SELECT paths FROM defs WHERE id = $1";
+  const { paths } = await pool
+    .query(sql, [req.params.id])
+    .then((ret) => ret.rows[0]);
 
-  const dbResult = await pool.query(
-    "SELECT def, paths FROM defs WHERE id = $1",
-    [id]
-  );
-
-  const { def, paths } = dbResult.rows[0];
-
-  console.log(paths);
   for (const [simplified, nmPath] of Object.entries(paths)) {
     app.use(`/${simplified}`, express.static(path.join(__dirname, nmPath)));
   }
-  console.log("paths applied");
 
-  const writePath = path.resolve(__dirname, "views", "storedDef.js");
-  await writeStoredDef(writePath, `\`${def}\``);
-  console.log("stored def written");
-
-  // function sleep(time) {
-  //   return new Promise((resolve) => setTimeout(resolve, time));
-  // }
-
-  // await sleep(1000);
-
-  console.log("sending file...");
   res.sendFile(path.join(viewsPath, "resultsId.html"));
 });
+
+const port = process.env.PORT || 5000;
 
 app.listen(port, () => console.log(`App listening on port ${port}`));

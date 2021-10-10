@@ -11,7 +11,7 @@ const NODES_BASE_DIR_PATH = path.resolve(
 // { trello: node_modules/n8n-nodes-base/dist/nodes/Trello/trello.svg }
 
 async function addImages(transposed) {
-  const serverPaths = {};
+  const paths = {};
 
   const promises = transposed.map(async (i) => {
     const { img: sourceImg, mapping: sourceServerPaths } =
@@ -21,13 +21,13 @@ async function addImages(transposed) {
 
     if (sourceServerPaths) {
       for (const [simplePath, nmPath] of Object.entries(sourceServerPaths)) {
-        serverPaths[simplePath] = nmPath;
+        paths[simplePath] = nmPath;
       }
     }
 
     if (targetServerPaths) {
       for (const [simplePath, nmPath] of Object.entries(targetServerPaths)) {
-        serverPaths[simplePath] = nmPath;
+        paths[simplePath] = nmPath;
       }
     }
 
@@ -47,7 +47,7 @@ async function addImages(transposed) {
 
   return {
     imagified: await Promise.all(promises),
-    serverPaths,
+    paths,
   };
 }
 
