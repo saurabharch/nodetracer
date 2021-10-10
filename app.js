@@ -4,6 +4,8 @@ const express = require("express");
 const port = process.env.PORT || 5000;
 const app = express();
 const { generate } = require("./gen");
+const { pool } = require("./dbConfig");
+const { writeStoredDef } = require("./gen/utils");
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -17,8 +19,7 @@ app.use((req, res, next) => {
 
 const viewsPath = path.join(__dirname, "views");
 
-// body parser alt
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); // body parser
 app.use(express.json());
 
 app.use(express.static(viewsPath));
@@ -49,22 +50,58 @@ app.post("/api/generate", async (req, res) => {
   try {
     const { def, serverPaths } = await generate(json, options);
     staticServerPaths = serverPaths;
-    res.json({ def });
+
+    const dbResult = await pool.query(
+      "INSERT INTO defs (def, paths) VALUES ($1, $2) RETURNING id",
+      [def, serverPaths]
+    );
+
+    const { id } = dbResult.rows[0];
+
+    res.json({ def, id });
   } catch (error) {
-    res.status(400).json({ message: "Failed to generate SVG for workflow" });
+    res
+      .status(400)
+      .json({ message: "Failed to generate and store SVG for workflow" });
   }
 });
 
 app.get("/result", (req, res) => {
-  for (const [simplfied, nmPath] of Object.entries(staticServerPaths)) {
-    app.use(`/${simplfied}`, express.static(path.join(__dirname, nmPath)));
+  for (const [simplified, nmPath] of Object.entries(staticServerPaths)) {
+    app.use(`/${simplified}`, express.static(path.join(__dirname, nmPath)));
   }
 
   res.sendFile(path.join(viewsPath, "result.html"));
 });
 
-app.listen(port, () => console.log(`App listening on port ${port}`));
+app.get("/results/:id", async (req, res) => {
+  const { id } = req.params;
 
-// temp - remove later
-const debugDef =
-  'graph LR;IF(fa:fa-map-signs) -->|T| Trello(<img src=\'/trello.svg\' />);class IF standardNode;class Trello standardNode;click IF "https://docs.n8n.io/nodes/n8n-nodes-base.if" _blank;click Trello "https://docs.n8n.io/nodes/n8n-nodes-base.trello" _blank;IF(fa:fa-map-signs) -->|F| NoOp(fa:fa-arrow-right);class IF standardNode;class NoOp standardNode;click IF "https://docs.n8n.io/nodes/n8n-nodes-base.if" _blank;click NoOp "https://docs.n8n.io/nodes/n8n-nodes-base.noOp" _blank;Set(fa:fa-pen) --> Airtable*(<img src=\'/airtable.svg\' />);class Set standardNode;class Airtable* standardNode;click Set "https://docs.n8n.io/nodes/n8n-nodes-base.set" _blank;click Airtable* "https://docs.n8n.io/nodes/n8n-nodes-base.airtable" _blank;TypeformTrigger(<img src=\'/typeform.svg\' />) --> Set(fa:fa-pen);class TypeformTrigger standardNode;click TypeformTrigger "https://docs.n8n.io/nodes/n8n-nodes-base.typeformTrigger" _blank;Airtable*(<img src=\'/airtable.svg\' />) --> IF(fa:fa-map-signs);class Airtable* highlight;click Airtable* "https://docs.n8n.io/nodes/n8n-nodes-base.airtable" _blank';
+  const dbResult = await pool.query(
+    "SELECT def, paths FROM defs WHERE id = $1",
+    [id]
+  );
+
+  const { def, paths } = dbResult.rows[0];
+
+  console.log(paths);
+  for (const [simplified, nmPath] of Object.entries(paths)) {
+    app.use(`/${simplified}`, express.static(path.join(__dirname, nmPath)));
+  }
+  console.log("paths applied");
+
+  const writePath = path.resolve(__dirname, "views", "storedDef.js");
+  await writeStoredDef(writePath, `\`${def}\``);
+  console.log("stored def written");
+
+  // function sleep(time) {
+  //   return new Promise((resolve) => setTimeout(resolve, time));
+  // }
+
+  // await sleep(1000);
+
+  console.log("sending file...");
+  res.sendFile(path.join(viewsPath, "resultsId.html"));
+});
+
+app.listen(port, () => console.log(`App listening on port ${port}`));

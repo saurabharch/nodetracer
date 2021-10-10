@@ -14,8 +14,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "n8n-nodes-base": "^0.138.0",
+    "pg": "^8.7.1",
     "serve-favicon": "^2.5.0"
   },
   "devDependencies": {

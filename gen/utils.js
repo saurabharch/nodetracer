@@ -3,10 +3,8 @@ const fs = require("fs");
 const readFile = (filePath) =>
   fs.promises.readFile(filePath, { encoding: "utf8" });
 
-const writeFile = (filePath, data) => fs.promises.writeFile(filePath, data);
-
-const writeDebugDef = (filePath, data) =>
-  fs.promises.writeFile(filePath, `const debugDef = ${data}`);
+const writeStoredDef = (filePath, data) =>
+  fs.promises.writeFile(filePath, `const storedDef = ${data}`);
 
 function deepMerge(...objects) {
   let result = {};
@@ -27,6 +25,5 @@ function deepMerge(...objects) {
 module.exports = {
   deepMerge,
   readFile,
-  writeFile,
-  writeDebugDef,
+  writeStoredDef,
 };

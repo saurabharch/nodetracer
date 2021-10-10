@@ -46,7 +46,7 @@
       }
 
       const res = await fetch('/api/generate', {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         method: event.target.method,
         body: JSON.stringify(payload)
       });
@@ -61,7 +61,8 @@
       }
 
       localStorage.setItem('def', json.def);
-      window.location.assign('/result');
+
+      window.location.assign(`/results/${json.id}`);
     });
   </script>
 

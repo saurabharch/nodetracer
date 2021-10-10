@@ -3,3 +3,4 @@ _trash
 *.todo
 notes.txt
 workflows
+.env
