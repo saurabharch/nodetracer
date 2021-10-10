@@ -92,7 +92,7 @@ async function getImgPathFromType(nodeType) {
       const nmPath = getNodesModulesPath(fullPath);
 
       return {
-        img: imgElement(simplified),
+        img: imgElement(`/${simplified}`),
         mapping: { [simplified]: nmPath },
       };
     } else if (icon.startsWith("fa:")) {
