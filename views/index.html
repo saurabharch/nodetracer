@@ -1,70 +1,128 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form</title>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="icon" type="image/ico" href="https://n8n.io/favicon.ico">
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+		integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<style>
+		.submit-form {
+			border: 1px solid #E8E8E8;
+			padding: 1.5em;
+			border-radius: 12px;
+			-webkit-box-shadow: 0px 6px 15px 0px rgba(81, 35, 28, 0.15);
+			box-shadow: 0px 6px 15px 0px rgba(81, 35, 28, 0.15);
+			background-color: #ffffff;
+
+		}
+
+		body {
+			background-color: #f5f2f1;
+		}
+	</style>
+
+	<title>nodetracer v0.1</title>
 </head>
 
 <body>
+	<div class="container">
+		<div class="row justify-content-center mt-5">
+			<div class="col-md-5 col-sm-12">
+				<img class="mb-2 img-fluid" src="https://i.ibb.co/RDh0XnV/nodetracer-logo.png" alt="nodetracer-logo">
+				<p style="text-align: center;">Turn your n8n workflows into shiny SVG images</p>
+			</div>
+		</div>
+		<div class="row justify-content-center mt-3">
+			<div class="col-md-5 col-sm-12">
+				<form id="form" class="submit-form" method="post">
+					<div class="form-group">
+						<label for="exampleFormControlTextarea1">Workflow JSON</label>
+						<textarea class="form-control " id="workflow-json-input"
+							placeholder="Paste your workflow in JSON format here"></textarea>
+					</div>
+					<div class="form-group">
+						<h6 class="pt-2">Options</h6>
+						<label for="wf-direction">Flow direction</label>
+						<select class="form-control" id="wf-direction">
+							<option value="LR">Left to right</option>
+							<option value="RL">Right to left</option>
+							<option value="TB">Top to bottom</option>
+							<option value="BT">Bottom to top</option>
+						</select>
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" value="" id="render-start-node">
+						<label class="form-check-label" for="render-start-node">
+							Render start node?
+						</label>
+					</div>
+					<button id="submit-button" type="submit" class="btn btn-primary mb-2 mt-4">Create SVG</button>
 
-  <form method="POST" id="workflow-form">
-    <label for="workflow">Workflow</label>
-    <input type="text" name="workflow" id="workflow" />
+				</form>
+			</div>
+		</div>
 
-    <label for="options-direction">Direction:</label>
-    <select id="options-direction" name="options-direction">
-      <option value="LR">Left to right</option>
-      <option value="TB">Top to bottom</option>
-    </select>
+		<!-- Optional JavaScript -->
+		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+			integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+			crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+			integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+			crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+			integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+			crossorigin="anonymous"></script>
+		<script type="text/javascript">
 
-    <label for="options-removeStartNode">Remove start node:</label>
-    <select id="options-removeStartNode" name="options-removeStartNode">
-      <option value="yes">Yes</option>
-      <option value="no">No</option>
-    </select>
+			const form = document.getElementById('form');
 
-    <button type="submit">Submit</button>
-  </form>
+			form.addEventListener('submit', async (event) => {
+				event.preventDefault();
+				$('#submit-button').html('Processing...');
 
-  <script>
-    localStorage.removeItem('def');
+				const payload = {
+					workflow: document.getElementById('workflow-json-input').value,
+					options: {
+						removeStartNode: document.getElementById('render-start-node').value === 'yes',
+						flowchart: { direction: document.getElementById('wf-direction').value }
+					}
+				}
 
-    const form = document.getElementById('workflow-form');
+				console.log('----');
+				console.log(payload);
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
+				//console.log(payload);
+				const res = await fetch('/api/generate', {
+					headers: { "Content-Type": "application/json" },
+					//headers: { "Content-Type": "application/json", Accept: "application/json", "Access-Control-Allow-Origin":"*"},
+					method: event.target.method,
+					//mode: "cors",
+					body: JSON.stringify(payload)
+				})
 
-      const payload = {
-        workflow: document.getElementById('workflow').value,
-        options: {
-          removeStartNode: document.getElementById('options-removeStartNode').value === 'yes',
-          flowchart: { direction: document.getElementById('options-direction').value }
-        }
-      }
 
-      const res = await fetch('/api/generate', {
-        headers: { "Content-Type": "application/json" },
-        method: event.target.method,
-        body: JSON.stringify(payload)
-      });
 
-      const json = await res.json();
+				//console.log(await res.json());
+				if (res.status == 400 || res.status == 404) {
+					$('#form').append("<p style='color:red'>There was a problem</p>");
+					return;
+				}
+				const json = await res.json();
+				// console.log(json.def);
+				//Put def in local storage
+				localStorage.setItem('def', json.def);
+				console.log(localStorage.getItem('def', json.def));
+				window.location.assign(`/results/${json.id}`);
 
-      if (res.status === 400) {
-        const validationMessageDiv = document.createElement("div");
-        validationMessageDiv.innerHTML = json.message;
-        document.body.appendChild(validationMessageDiv);
-        return;
-      }
 
-      localStorage.setItem('def', json.def);
-      window.location.assign('/result');
-    });
-  </script>
+			});
 
+		</script>
 </body>
 
 </html>
