@@ -2,6 +2,11 @@ const faIcons = `
   img, .fa {
     width: 60px;
     height: 60px;
+    padding: 6px;
+  }
+  .edgePath .path {
+    stroke: #C6C8D0 !important;
+    //stroke: blue !important;
   }
 
   i.fa {
@@ -9,8 +14,8 @@ const faIcons = `
   }
 
   i.fa.fa-code {
-    padding: 0px;
-    font-size: 36px;
+    padding: 6px;
+    font-size: 38px;
   }
 
   i::before {
@@ -99,27 +104,34 @@ const themeCSS = `
 
   .standardNode > rect {
     fill: white !important;
-    stroke: black !important;
-    stroke-dasharray: 5 !important;
+    stroke: #7d838f !important;
+    stroke-width: 2px;
+    // stroke-dasharray: 5 !important;
+    padding: 50px !important;
   }
 
   .highlight > rect {
-    fill: yellow !important;
+    fill: #f9e990 !important;
+  }
+
+  div[style*="display: inline-block; white-space: nowrap;"] {
+    // fill: blue;
+    // margin: 20px;
   }
 
   img,
   .fa {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
   }
 
   i.fa {
-    font-size: 45px;
+    font-size: 33px;
   }
 
   i.fa.fa-code {
     padding: 0px;
-    font-size: 36px;
+    // font-size: 5px;
   }
 
   i::before {

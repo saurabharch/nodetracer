@@ -55,7 +55,7 @@
 						</select>
 					</div>
 					<div class="form-check">
-						<input class="form-check-input" type="checkbox" value="" id="render-start-node">
+						<input class="form-check-input" type="checkbox" value="yes" id="render-start-node">
 						<label class="form-check-label" for="render-start-node">
 							Render start node?
 						</label>
@@ -94,7 +94,14 @@
 				}
 
 				console.log('----');
-				console.log(payload);
+				console.log(payload.options.direction);
+				// console.log(document.getElementById('render-start-node').value);
+				// console.log(document.getElementById('render-start-node').value === 'yes');
+				console.log('----');
+
+				// throw new Error('Stop')
+
+
 
 				//console.log(payload);
 				const res = await fetch('/api/generate', {

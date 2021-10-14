@@ -13,9 +13,13 @@ async function generate(json, options) {
 
   const config = deepMerge(defaultConfig, options);
 
+  console.log(config.removeStartNode);
+
   connections = config.removeStartNode
     ? connections.filter((c) => c.source !== "Start")
     : connections;
+
+  console.log(connections);
 
   const transposed = transpose(connections, nodes);
   const { imagified, paths } = await addImages(transposed);
