@@ -4,3 +4,4 @@ _trash
 notes.txt
 workflows
 .env
+.DS_Store
