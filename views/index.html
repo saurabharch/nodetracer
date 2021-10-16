@@ -21,7 +21,13 @@
 		}
 
 		body {
-			background-color: #f5f2f1;
+			background-image: url(https://i.ibb.co/x1RNzBg/worn-dots.png);
+			background-repeat: repeat;
+		}
+
+		p,
+		label {
+			color: #535353 !important;
 		}
 	</style>
 
@@ -39,13 +45,13 @@
 		<div class="row justify-content-center mt-3">
 			<div class="col-md-5 col-sm-12">
 				<form id="form" class="submit-form" method="post">
+					<h5 style="text-align:center;" class="mb-4">Create SVG from workflow</h5>
 					<div class="form-group">
 						<label for="exampleFormControlTextarea1">Workflow JSON</label>
-						<textarea class="form-control " id="workflow-json-input"
+						<textarea class="form-control" rows="5" id="workflow-json-input"
 							placeholder="Paste your workflow in JSON format here"></textarea>
 					</div>
 					<div class="form-group">
-						<h6 class="pt-2">Options</h6>
 						<label for="wf-direction">Flow direction</label>
 						<select class="form-control" id="wf-direction">
 							<option value="LR">Left to right</option>
@@ -55,12 +61,13 @@
 						</select>
 					</div>
 					<div class="form-check">
-						<input class="form-check-input" type="checkbox" value="" id="render-start-node">
+						<!-- <input class="form-check-input" type="checkbox" value="yes" id="render-start-node">
 						<label class="form-check-label" for="render-start-node">
 							Render start node?
-						</label>
+						</label> -->
 					</div>
-					<button id="submit-button" type="submit" class="btn btn-primary mb-2 mt-4">Create SVG</button>
+					<button id="submit-button" type="submit" class="btn btn-block btn-lg btn-primary mb-2 mt-4">Create
+						SVG</button>
 
 				</form>
 			</div>
@@ -88,13 +95,20 @@
 				const payload = {
 					workflow: document.getElementById('workflow-json-input').value,
 					options: {
-						removeStartNode: document.getElementById('render-start-node').value === 'yes',
+						// removeStartNode: document.getElementById('render-start-node').value === 'yes',
 						flowchart: { direction: document.getElementById('wf-direction').value }
 					}
 				}
 
 				console.log('----');
-				console.log(payload);
+				// console.log(payload.options.removeStartNode);
+				// console.log(document.getElementById('render-start-node').value);
+				// console.log(document.getElementById('render-start-node').value === 'yes');
+				console.log('----');
+
+				// throw new Error('Stop')
+
+
 
 				//console.log(payload);
 				const res = await fetch('/api/generate', {
