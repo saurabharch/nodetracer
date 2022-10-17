@@ -8,12 +8,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <style>
+    @font-face {
+      font-family: "FontAwesome";
+      font-weight: normal;
+      font-display: auto;
+      font-style: normal;
+      src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2") format("woff2");
+    }
+
     body {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       max-width: 100vw;
+    }
+
+    #canvas {
+      width: 100%;
+      text-align: center;
     }
   </style>
 </head>
@@ -22,17 +35,26 @@
 
   <div id="canvas"></div>
   <script src="https://unpkg.com/mermaid@8.8.0/dist/mermaid.min.js"></script>
+  <script src="https://www.unpkg.com/dom-to-image@2.6.0/dist/dom-to-image.min.js"></script>
   <script src="/configurableTheme.js"></script>
   <script src="/renderConfig.js"></script>
 
   <script>
-    const id = window.location.href.split('/').pop();
+    (async () => {
+      const id = window.location.href.split('/').pop();
 
-    fetch(`/api/defs/${id}`, {
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      method: 'get',
-    }).then(async res => {
-      const json = await res.json();
+      const headers = { "Content-Type": "application/json" };
+
+      await fetch("/api/register-paths", {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({ id })
+      });
+
+      const { def } = await fetch(`/api/defs/${id}`, {
+        headers,
+        method: 'get',
+      }).then(r => r.json())
 
       mermaid.mermaidAPI.initialize(renderConfig);
 
@@ -40,8 +62,22 @@
         document.getElementById("canvas").innerHTML = svgCode;
       };
 
-      mermaid.mermaidAPI.render("mermaid", json.def, embedSvg);
-    });
+      mermaid.mermaidAPI.render("mermaid", def, embedSvg);
+
+      const canvas = document.getElementById('canvas');
+
+      domtoimage.toPng(canvas)
+        .then(function (dataUrl) {
+          console.log('here');
+          var img = new Image();
+          img.src = dataUrl;
+          document.body.appendChild(img);
+        })
+        .catch(function (error) {
+          console.error('oops, something went wrong!', error);
+        });
+
+    })();
   </script>
 
 </body>

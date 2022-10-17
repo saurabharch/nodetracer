@@ -60,21 +60,27 @@
 							<option value="BT">Bottom to top</option>
 						</select>
 					</div>
+					<div class="form-group">
+						<label for="wf-direction">Arrow style</label>
+						<select class="form-control" id="arrow-style">
+							<option value="regular">Regular</option>
+							<option value="bold">Bold</option>
+							<option value="dotted">Dotted</option>
+						</select>
+					</div>
 					<div class="form-check">
-						<!-- <input class="form-check-input" type="checkbox" value="yes" id="render-start-node">
+						<input class="form-check-input" type="checkbox" value="yes" id="render-start-node">
 						<label class="form-check-label" for="render-start-node">
 							Render start node?
-						</label> -->
+						</label>
 					</div>
-					<button id="submit-button" type="submit" class="btn btn-block btn-lg btn-primary mb-2 mt-4">Create
-						SVG</button>
-
+					<button id="submit-button" type="submit" class="btn btn-block btn-lg btn-primary mb-2 mt-4">
+						Create SVG
+					</button>
 				</form>
 			</div>
 		</div>
 
-		<!-- Optional JavaScript -->
-		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
 		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
 			integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
 			crossorigin="anonymous"></script>
@@ -84,56 +90,57 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
 			integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
 			crossorigin="anonymous"></script>
-		<script type="text/javascript">
 
+		<script type="text/javascript">
 			const form = document.getElementById('form');
 
 			form.addEventListener('submit', async (event) => {
 				event.preventDefault();
 				$('#submit-button').html('Processing...');
 
+				const workflowJson = document.getElementById('workflow-json-input').value;
+
+				let workflow;
+				try {
+					workflow = JSON.parse(workflowJson);
+				} catch (error) {
+					$('#form').append("<p style='color:red'>Input is not valid JSON</p>");
+					return;
+				}
+
+				const rawArrowStyle = document.getElementById('arrow-style').value;
+				const arrowMap = { regular: '-->', bold: '==>', dotted: '-.->' }
+				let arrowStyle = arrowMap[rawArrowStyle];
+
 				const payload = {
-					workflow: document.getElementById('workflow-json-input').value,
+					workflow,
 					options: {
-						// removeStartNode: document.getElementById('render-start-node').value === 'yes',
-						flowchart: { direction: document.getElementById('wf-direction').value }
+						removeStartNode: !document.getElementById('render-start-node').checked,
+						flowchart: {
+							direction: document.getElementById('wf-direction').value,
+							arrowType: arrowStyle
+						}
 					}
 				}
 
-				console.log('----');
-				// console.log(payload.options.removeStartNode);
-				// console.log(document.getElementById('render-start-node').value);
-				// console.log(document.getElementById('render-start-node').value === 'yes');
-				console.log('----');
-
-				// throw new Error('Stop')
-
-
-
-				//console.log(payload);
-				const res = await fetch('/api/generate', {
-					headers: { "Content-Type": "application/json" },
-					//headers: { "Content-Type": "application/json", Accept: "application/json", "Access-Control-Allow-Origin":"*"},
-					method: event.target.method,
-					//mode: "cors",
+				const response = await fetch('/api/generate', {
+					headers: {
+						"Content-Type": "application/json"
+					},
+					method: 'POST',
 					body: JSON.stringify(payload)
 				})
 
-
-
-				//console.log(await res.json());
-				if (res.status == 400 || res.status == 404) {
+				if (response.status === 400 || response.status === 404) {
 					$('#form').append("<p style='color:red'>There was a problem</p>");
+					$('#submit-button').html('Create SVG');
+					console.log(response.message);
 					return;
 				}
-				const json = await res.json();
-				// console.log(json.def);
-				//Put def in local storage
-				localStorage.setItem('def', json.def);
-				console.log(localStorage.getItem('def', json.def));
+
+				const json = await response.json();
+
 				window.location.assign(`/results/${json.id}`);
-
-
 			});
 
 		</script>

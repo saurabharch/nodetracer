@@ -1,6 +1,6 @@
 const { getNodesAndConnections } = require("./getNodesAndConnections");
 const { deepMerge } = require("./utils");
-const { defaultConfig } = require("./defaultConfig");
+const { defaultDefConfig } = require("./defaultDefConfig");
 
 const { transpose } = require("./steps/transpose");
 const { markIfBranches } = require("./steps/markIfBranches");
@@ -8,18 +8,14 @@ const { setHighlight } = require("./steps/setHighlight");
 const { addImages } = require("./steps/addImages");
 const { makeDef } = require("./steps/makeDef");
 
-async function generate(json, options) {
-  let { nodes, connections } = getNodesAndConnections(json);
+async function generate(wfObj, options) {
+  let { nodes, connections } = getNodesAndConnections(wfObj);
 
-  const config = deepMerge(defaultConfig, options);
-
-  console.log(config.removeStartNode);
+  const config = deepMerge(defaultDefConfig, options);
 
   connections = config.removeStartNode
     ? connections.filter((c) => c.source !== "Start")
     : connections;
-
-  console.log(connections);
 
   const transposed = transpose(connections, nodes);
   const { imagified, paths } = await addImages(transposed);

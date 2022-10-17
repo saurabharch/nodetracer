@@ -97,6 +97,13 @@ const faIcons = `
 `;
 
 const themeCSS = `
+  #mermaid svg[id^="m"][width][height][viewBox] {
+    min-width: 350px;
+    max-width: 600px;
+    width: 80%;
+    height: auto;
+  }
+
   // temp
   #mermaid .edgeLabel {
     background-color: red;

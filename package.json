@@ -5,8 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js",
-    "test": "node gen/tests/index.js"
+    "debug": "node debug.js",
+    "dev": "nodemon app.js"
   },
   "engines": {
     "node": "14.x"
@@ -17,11 +17,13 @@
     "compression": "^1.7.4",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
     "n8n-nodes-base": "^0.138.0",
     "pg": "^8.7.1",
     "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
+    "node-fetch": "^2.0.0",
     "nodemon": "^2.0.13",
     "prettier": "^2.4.1"
   }

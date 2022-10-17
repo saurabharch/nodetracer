@@ -1,23 +1,17 @@
-const defaultConfig = {
+const defaultDefConfig = {
   securityLevel: "loose",
-
-  /**
-   * One of `hidden`, 'showing'
-   */
   removeStartNode: true,
-
   flowchart: {
     /**
-     * One of `LR`, `TB`.
+     * One of `LR`, `TB`, `RL`, `BT`.
      */
     direction: "LR",
 
     /**
      * One of `-->`, `==>`, `-.->`
-     * Add dashes for longer arrows: ---->
      */
     arrowType: "-->",
   },
 };
 
-module.exports = { defaultConfig };
+module.exports = { defaultDefConfig };

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Debug</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 95vh;
+    }
+
+    #canvas {
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="canvas"></div>
+
+  <script src="https://unpkg.com/mermaid@8.8.0/dist/mermaid.min.js"></script>
+  <script src="./configurableTheme.js"></script>
+  <script src="./renderConfig.js"></script>
+  <script src="./debugWorkflow.js"></script>
+
+  <script>
+
+    (async () => {
+      const { def, id } = await fetch("/api/generate", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          workflow: debugWorkflow,
+          options: {},
+        }),
+      }).then(r => r.json());
+
+      await fetch("/api/register-paths", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: 'POST',
+        body: JSON.stringify({ id })
+      });
+
+      mermaid.mermaidAPI.initialize(renderConfig);
+
+      mermaid.flowchartConfig = {
+        width: '100%'
+      };
+
+      const embedSvg = function (svgCode, bindFunctions) {
+        document.getElementById("canvas").innerHTML = svgCode;
+      };
+
+      mermaid.mermaidAPI.render("mermaid", def, embedSvg);
+    })();
+  </script>
+
+</body>
+
+</html>
